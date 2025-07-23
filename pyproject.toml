@@ -1,0 +1,15 @@
+[project]
+name = "groundx-community"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "arxiv>=2.2.0",
+    "groundx>=2.3.5",
+    "langchain>=0.3.26",
+    "langchain-openai>=0.3.28",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "python-dotenv>=1.1.1",
+]
