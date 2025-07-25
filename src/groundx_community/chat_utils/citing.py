@@ -1,11 +1,10 @@
 import os
 import re
 from urllib import parse
-from typing import List, TypedDict, Dict, Any
+from typing import List, TypedDict, Dict, Any, Optional
 from langchain_openai import ChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
-
-DEFAULT_MODEL = "gpt-4o"
 
 class Chunk(TypedDict):
     text: str
@@ -26,11 +25,14 @@ async def generate_cited_response(
     chunks: List[Chunk],
     system_prompt: str,
     query: str,
-    model: str = DEFAULT_MODEL,
-    temperature: float = 1,
-    top_p: float = 0.4,
-    max_completion_tokens: int = 8192,
+    llm: Optional[BaseChatModel] = None,
 ) -> str:
+    if llm is None:
+        llm = ChatOpenAI(
+            model="gpt-4o",
+            api_key=get_openai_api_key(),
+        )
+
     ref_mapping = {}
     chunk_texts = []
     for ref in chunks:
@@ -60,23 +62,11 @@ Take into account everything we've discussed so far, without assuming everything
 {context}
 """
 
-    question_with_prompt = query
-
-    api_key = get_openai_api_key()
-
-    llm = ChatOpenAI(
-        model=model,
-        temperature=temperature,
-        top_p=top_p,
-        max_completion_tokens=max_completion_tokens,
-        api_key=api_key,
-    )
-
     answer = await llm.ainvoke(
         input=[
             SystemMessage(content=system_prompt),
             HumanMessage(content=human_prompt),
-            HumanMessage(content=question_with_prompt),
+            HumanMessage(content=query),
         ]
     )
     answer = answer.content
